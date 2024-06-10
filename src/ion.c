@@ -15,8 +15,8 @@ obj_t createEmptyObject() {
 };
 
 obj_t insertObjectEntry(obj_t object, string key, obj_t_value_t value) {
-    obj_t_key_t *key_ = realloc(key, sizeof(obj_t_key_t) * (object.count + 1));
-    obj_t_value_t *value_ = realloc(value, sizeof(obj_t_value_t) * (object.count + 1));
+    obj_t_key_t *key_ = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
+    obj_t_value_t *value_ = realloc(object.value, sizeof(obj_t_value_t) * (object.count + 1));
     if(key_ == NULL || value_ == NULL) {
         fprintf(stderr, "failed to allocate memory in insertObjectEntry\n");
         exit(EXIT_FAILURE);
@@ -76,6 +76,7 @@ obj_t insertNumberEntry(obj_t object, string key, number_t value) {
 obj_t insertStringEntry(obj_t object, string key, string value) {
     obj_t_key_t *key_ = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
     string *value_ = realloc(object.value, sizeof(string) * (object.count + 1));
+    printf("key: %p\nvalue: %p\n", key, value);
     if(key_ == NULL || value_ == NULL) {
         fprintf(stderr, "failed to allocate memory in insertStringEntry\n");
         exit(EXIT_FAILURE);
@@ -119,29 +120,36 @@ obj_t insertNullEntry(obj_t object, string key) {
     return object;
 }
 
+string arrayToJson(array_t array) {
+    (void) array;
+    return string("<an array prbably lives here>");
+}
+
 string objectToJson(obj_t object) {
     string ret = string("{");
-    for(size_t entry = 0; entry < object.count; entry++) {
-        ret = concat(ret, string("\""));
-        ret = concat(ret, object.key[entry].name);
-        ret = concat(ret, string("\" : "));
-        switch (object.value[entry].discriminant) {
-        case obj_t_string:
-            ret = concat(ret, string("\""));
-            ret = concat(ret, object.value[entry].str);
-            ret = concat(ret, string("\""));
-            break;
-        case obj_t_array:
-            ret = concat(ret, arrayToJson(object.value[entry].arr));
-            break;
-        case obj_t_obj:
-            ret = concat(ret, objectToJson(object.value[entry].obj));
-            break;
-        default:
-            break;
+    for (size_t i = 0; i < object.count; i++) {
+        ret = append(ret, "\"");
+        ret = append(ret, object.key[i].name);
+        ret = append(ret, "\" : ");
+        switch(object.value[i].discriminant) {
+            case obj_t_string:
+                ret = append(ret, object.value[i].str);
+                break;
+            case obj_t_array:
+                ret = append(ret, arrayToJson(object.value[i].arr));
+                break;
+            case obj_t_obj:
+                ret = append(ret, objectToJson(object.value[i].obj));
+                break;
+            case obj_t_number:
+                ret = append(ret, "<number>");
+            default:
+                break;
         }
-        ret = concat(ret, string(","));
+        ret = append(ret, ", ");
     }
+    ret = append(ret, "}");
+    return ret;
 }
 
 void destroyObject(obj_t object) { 
@@ -151,7 +159,7 @@ void destroyObject(obj_t object) {
                 destroyString(object.value[i].str);
                 break;
             case obj_t_array:
-                object.value[i].arr.destructor(object.value[i].arr);
+                object.value[i].arr.destructor(object.value[i].arr.array);
                 break;
             case obj_t_obj:
                 destroyObject(object.value[i].obj);
@@ -167,8 +175,8 @@ void destroyObject(obj_t object) {
 array_t createEmptyArray(void) {
     return (array_t) {
         .count = 0,
-        .destructor = NULL
         .allocated_bytes = 0,
+        .destructor = NULL,
         .element_size = sizeof(obj_t_value_t),
     };
 }
