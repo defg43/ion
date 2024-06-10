@@ -1,0 +1,3 @@
+[submodule "str"]
+	path = str
+	url = git@github.com:defg43/str.git
