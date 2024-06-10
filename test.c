@@ -3,10 +3,8 @@
 #include <stdbool.h>
 
 bool test() {
-    string str = stringFromString(stringFromCharPtr("test"));
-    printf("%s\n", str);
-    destroyString(str);
-    return true;
+    obj_t obj = createEmptyObject();
+    insertStringEntry(obj, string("hello"), string("world"));
 }
 
 int main() {

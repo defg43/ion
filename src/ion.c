@@ -24,7 +24,6 @@ obj_t insertObjectEntry(obj_t object, string key, obj_t_value_t value) {
     object.count++;
     object.key[object.count].name = key; // key is just absorbed here and owned here from now on
     // this should be sourced from the string allocator backend once it is implemented
-    object.key[object.count].destructor = free;
     object.value[object.count] = value;
     return object;
 }
@@ -39,7 +38,6 @@ obj_t insertSubobjectEntry(obj_t object, string key, obj_t value) {
     object.count++;
     object.key[object.count].name = key; // key is just absorbed here and owned here from now on
     // this should be sourced from the string allocator backend once it is implemented
-    object.key[object.count].destructor = free;
     object.value[object.count].discriminant = obj_t_obj;
     object.value[object.count].obj = value;
     return object;
@@ -55,7 +53,6 @@ obj_t insertArrayEntry(obj_t object, string key, array_t value) {
     object.count++;
     object.key[object.count].name = key; // key is just absorbed here and owned here from now on
     // this should be sourced from the string allocator backend once it is implemented
-    object.key[object.count].destructor = free;
     object.value[object.count].discriminant = obj_t_array;
     object.value[object.count].arr = value;
     return object;
@@ -71,7 +68,6 @@ obj_t insertNumberEntry(obj_t object, string key, number_t value) {
     object.count++;
     object.key[object.count].name = key; // key is just absorbed here and owned here from now on
     // this should be sourced from the string allocator backend once it is implemented
-    object.key[object.count].destructor = free;
     object.value[object.count].discriminant = obj_t_number;
     object.value[object.count].num = value;
     return object;
@@ -87,7 +83,6 @@ obj_t insertStringEntry(obj_t object, string key, string value) {
     object.count++;
     object.key[object.count].name = key; // key is just absorbed here and owned here from now on
     // this should be sourced from the string allocator backend once it is implemented
-    object.key[object.count].destructor = free;
     object.value[object.count].discriminant = obj_t_string;
     object.value[object.count].str = value;
     return object;
@@ -103,7 +98,6 @@ obj_t insertBoolEntry(obj_t object, string key, bool value) {
     object.count++;
     object.key[object.count].name = key; // key is just absorbed here and owned here from now on
     // this should be sourced from the string allocator backend once it is implemented
-    object.key[object.count].destructor = NULL;
     if(value) {
         object.value[object.count].discriminant = obj_t_true;
     } else {
@@ -121,7 +115,84 @@ obj_t insertNullEntry(obj_t object, string key) {
     object.count++;
     object.key[object.count].name = key; // key is just absorbed here and owned here from now on
     // this should be sourced from the string allocator backend once it is implemented
-    object.key[object.count].destructor = NULL;
     object.value[object.count].discriminant = obj_t_null;
     return object;
 }
+
+string objectToJson(obj_t object) {
+    string ret = string("{");
+    for(size_t entry = 0; entry < object.count; entry++) {
+        ret = concat(ret, string("\""));
+        ret = concat(ret, object.key[entry].name);
+        ret = concat(ret, string("\" : "));
+        switch (object.value[entry].discriminant) {
+        case obj_t_string:
+            ret = concat(ret, string("\""));
+            ret = concat(ret, object.value[entry].str);
+            ret = concat(ret, string("\""));
+            break;
+        case obj_t_array:
+            ret = concat(ret, arrayToJson(object.value[entry].arr));
+            break;
+        case obj_t_obj:
+            ret = concat(ret, objectToJson(object.value[entry].obj));
+            break;
+        default:
+            break;
+        }
+        ret = concat(ret, string(","));
+    }
+}
+
+void destroyObject(obj_t object) { 
+    for(size_t i = 0; i < object.count; i++) {
+        switch(object.value[i].discriminant) {
+            case obj_t_string:
+                destroyString(object.value[i].str);
+                break;
+            case obj_t_array:
+                object.value[i].arr.destructor(object.value[i].arr);
+                break;
+            case obj_t_obj:
+                destroyObject(object.value[i].obj);
+                break;
+            default:
+                break;
+        }
+    }
+    object.destructor(object.key);
+    object.destructor(object.value);
+}
+
+array_t createEmptyArray(void) {
+    return (array_t) {
+        .count = 0,
+        .destructor = NULL
+        .allocated_bytes = 0,
+        .element_size = sizeof(obj_t_value_t),
+    };
+}
+
+array_t insertIntoArray(array_t arr, obj_t_value_t value) {
+    obj_t_value_t *value_ = realloc(arr.array, sizeof(obj_t_value_t) * (arr.count + 1));
+    if(value_ == NULL) {
+        fprintf(stderr, "failed to allocate memory in insertIntoArray\n");
+        exit(EXIT_FAILURE);
+    } 
+    if(arr.destructor == NULL) {
+        arr.destructor = free; 
+    } else if(arr.destructor != free){
+        fprintf(stderr, "using different memory managment schemes on the same array\n");
+        exit(EXIT_FAILURE);
+    }
+    arr.count++;
+    arr.array = value_;
+    arr.array[arr.count - 1] = value;
+    return arr;
+}
+
+void destroyArray(array_t arr) {
+    arr.destructor(arr.array);
+}
+
+    
