@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <math.h>
 
 obj_t createEmptyObject() {
     return (obj_t) {
@@ -157,7 +158,9 @@ string arrayToJson(array_t array, string external) {
                 ret = objectToJson(array.array[i].obj, ret);
             break;
             default:
-                ret = append(ret, "<unknown>");
+                string temp = numberToString(array.array[i].num);
+                ret = append(ret, temp);
+                destroyString(temp);
             break;
         }
         if(i < array.count - 1) {
@@ -204,10 +207,12 @@ string objectToJson(obj_t object, string external) {
                 ret = append(ret, "false");
             break;
             case obj_t_number:
-                ret = append(ret, "<number>");
+                string temp = numberToString(object.value[i].num);
+                ret = append(ret, temp);
+                destroyString(temp);
             break;
             default:
-                ret = append(ret, "<unknown>");
+                ret = append(ret, "null");
             break;
         }
         if(i != object.count - 1) {
@@ -216,6 +221,103 @@ string objectToJson(obj_t object, string external) {
     }
 
     ret = append(ret, "}");
+    return ret;
+}
+
+string numberToString(number_t number) {
+    string ret = string("");
+    char digit[2] = { '0', '\0' };
+    bool needs_sign = false;
+    switch(number.number_discriminant) {
+        case number_t_uint64_t:
+            while(number.as_uint64_t > 0) {
+                digit[0] = '0' + number.as_uint64_t % 10;
+                number.as_uint64_t /= 10;
+                ret = append(ret, digit);
+            }
+            stringReverse(ret);
+        break;
+        case number_t_int64_t:
+            if(number.as_int64_t < 0) {
+                number.as_int64_t = -number.as_int64_t;
+                needs_sign = true;
+            }
+            while(number.as_int64_t > 0) {
+                digit[0] = '0' + number.as_int64_t % 10;
+                number.as_int64_t /= 10;
+                ret = append(ret, digit);
+            }
+            if(needs_sign) {
+                ret = append(ret, "-");
+                needs_sign = false;
+            }
+            stringReverse(ret);
+        break;
+        case number_t_float:
+            if(number.as_float < 0) {
+                number.as_float = -number.as_float;
+                needs_sign = true;
+            }
+            {
+                // extra 3 for null terminator, . and sign
+                #define MAX_FLOAT_DIGITS (32 * 2 + 3)
+                // man, i sure do hope this fixed stack buffer is enough to hold my string
+                // what could possibly go wrong?
+                char num_buff[MAX_FLOAT_DIGITS]; 
+                snprintf(num_buff, MAX_FLOAT_DIGITS, "%.6g", number.as_float);
+                #undef MAX_FLOAT_DIGITS
+                if(needs_sign) {
+                    ret = append(ret, "-");
+                    needs_sign = false;
+                }
+                ret = append(ret, num_buff);
+            }
+        break;
+        case number_t_double:
+            if(number.as_double < 0) {
+                number.as_double = -number.as_double;
+                needs_sign = true;
+            }
+            {
+                // extra 3 for null terminator, . and sign
+                #define MAX_FLOAT_DIGITS (32 * 4 + 3)
+                // man, i sure do hope this fixed stack buffer is enough to hold my string
+                // what could possibly go wrong?
+                char num_buff[MAX_FLOAT_DIGITS]; 
+                snprintf(num_buff, MAX_FLOAT_DIGITS, "%.15g", number.as_double);
+                #undef MAX_FLOAT_DIGITS
+                if(needs_sign) {
+                    ret = append(ret, "-");
+                    needs_sign = false;
+                }
+                ret = append(ret, num_buff);
+            }
+        break;
+        case number_t_long_double:
+            if(number.as_long_double < 0) {
+                number.as_long_double = -number.as_long_double;
+                needs_sign = true;
+            }
+            {
+                // extra 3 for null terminator, . and sign
+                #define MAX_FLOAT_DIGITS (32 * 6 + 3)
+                // man, i sure do hope this fixed stack buffer is enough to hold my string
+                // what could possibly go wrong?
+                char num_buff[MAX_FLOAT_DIGITS]; 
+                snprintf(num_buff, MAX_FLOAT_DIGITS, "%.18g", number.as_long_double);
+                #undef MAX_FLOAT_DIGITS
+                if(needs_sign) {
+                    ret = append(ret, "-");
+                    needs_sign = false;
+                }
+                ret = append(ret, num_buff);
+            }
+        
+        default:
+            fprintf(stderr, "unknown number discriminant\n");
+            exit(EXIT_FAILURE);
+        break;
+    }
     return ret;
 }
 

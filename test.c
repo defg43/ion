@@ -5,20 +5,18 @@
 bool test() {
     obj_t obj = createEmptyObject();
     obj = insertStringEntry(obj, string("hello"), string("world"));
-    obj = insertStringEntry(obj, string("foo"), string("bar"));
-    obj = insertStringEntry(obj, string("baz"), string("qux"));
-    obj = insertStringEntry(obj, string("cat"), string("dog"));
-    obj_t obj2 = createEmptyObject();
-    obj2 = insertStringEntry(obj2, string("hello2"), string("world2"));
-    obj = insertSubobjectEntry(obj, string("obj2"), obj2);
-    obj = insertStringEntry(obj, string("hello3"), string("world3"));
+    obj = insertNumberEntry(obj, string("number"), makeNumber(2.275));
     array_t arr = createEmptyArray();
     arr = insertIntoArray(arr, objectValue(string("a")));
     arr = insertIntoArray(arr, objectValue(string("b")));
     arr = insertIntoArray(arr, objectValue(string("c")));
-    obj = insertArrayEntry(obj, string("arr"), arr);
+    obj = insertArrayEntry(obj, string("array"), arr);
+    obj = insertBoolEntry(obj, string("val1"), true);
+    obj = insertBoolEntry(obj, string("val2"), false);
+    obj = insertNullEntry(obj, string("val3"));
 
     string json = objectToJson(obj, (string) {NULL});
+
     printf("%s\n", json);
     printf("allocated size for json: %ld\n", stringbytesalloced(json));
     destroyObject(obj);

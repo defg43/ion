@@ -77,35 +77,52 @@ struct obj_t_value_t {
 	};
 };
 
-#define makeNumber(num_) 																			\
-	({																								\
-		auto num = (num_);																			\
-		_Generic((num),																				\
-			uint8_t:  { .number_discriminant = number_t_uint64_t, .as_uint64_t = (uint64_t)num }, 	\
-			uint16_t: { .number_discriminant = number_t_uint64_t, .as_uint64_t = (uint64_t)num }, 	\
-			uint32_t: { .number_discriminant = number_t_uint64_t, .as_uint64_t = (uint64_t)num }, 	\
-			uint64_t: { .number_discriminant = number_t_uint64_t, .as_uint64_t = (uint64_t)num }, 	\
-			int8_t:  { .number_discriminant = number_t_int64_t, .as_int64_t = (int64_t)num }, 		\
-			int16_t: { .number_discriminant = number_t_int64_t, .as_int64_t = (int64_t)num }, 		\
-			int32_t: { .number_discriminant = number_t_int64_t, .as_int64_t = (int64_t)num }, 		\
-			int64_t: { .number_discriminant = number_t_int64_t, .as_int64_t = (int64_t)num }, 		\
-			long double: 																			\
-			{ .number_discriminant = number_t_long_double, .as_long_double = (long double)num }, 	\
-			double: { .number_discriminant = number_t_double, .as_double = (double)num },			\
-			float: { .number_discriminant = number_t_float, .as_float = (float)num }				\
-		);																							\
+#define makeNumber(num_) 																						\
+	({																											\
+		auto num = (num_);																						\
+		_Generic((num),																							\
+			uint8_t:  (number_t) { .number_discriminant = number_t_uint64_t, .as_uint64_t = (uint64_t)num }, 	\
+			uint16_t: (number_t) { .number_discriminant = number_t_uint64_t, .as_uint64_t = (uint64_t)num }, 	\
+			uint32_t: (number_t) { .number_discriminant = number_t_uint64_t, .as_uint64_t = (uint64_t)num }, 	\
+			uint64_t: (number_t) { .number_discriminant = number_t_uint64_t, .as_uint64_t = (uint64_t)num }, 	\
+			int8_t:  (number_t) { .number_discriminant = number_t_int64_t, .as_int64_t = (int64_t)num }, 		\
+			int16_t: (number_t) { .number_discriminant = number_t_int64_t, .as_int64_t = (int64_t)num }, 		\
+			int32_t: (number_t) { .number_discriminant = number_t_int64_t, .as_int64_t = (int64_t)num }, 		\
+			int64_t: (number_t) { .number_discriminant = number_t_int64_t, .as_int64_t = (int64_t)num }, 		\
+			long double: 																						\
+			(number_t) { .number_discriminant = number_t_long_double, .as_long_double = (long double)num }, 	\
+			double: (number_t) { .number_discriminant = number_t_double, .as_double = (double)num },			\
+			float: (number_t) { .number_discriminant = number_t_float, .as_float = (float)num }					\
+		);																										\
 	})
 
-#define objectValue(val_) 																			\
-	({																								\
+#define objectValue(val_) 																					\
+	({																										\
 		typeof(val_) val = (val_);																			\
-		_Generic((val),																				\
-			string: (obj_t_value_t) { .discriminant = obj_t_string, .str = coerce(val, string) },					\
-			array_t: (obj_t_value_t) { .discriminant = obj_t_array, .arr = coerce(val, array_t) },					\
-			number_t: (obj_t_value_t) { .discriminant = obj_t_number, .num = coerce(val, number_t) },				\
-			obj_t: (obj_t_value_t) { .discriminant = obj_t_obj, .obj = coerce(val, obj_t) }							\
-		);																							\
+		_Generic((val),																						\
+			string: (obj_t_value_t) { .discriminant = obj_t_string, .str = coerce(val, string) },			\
+			array_t: (obj_t_value_t) { .discriminant = obj_t_array, .arr = coerce(val, array_t) },			\
+			number_t: (obj_t_value_t) { .discriminant = obj_t_number, .num = coerce(val, number_t) },		\
+			obj_t: (obj_t_value_t) { .discriminant = obj_t_obj, .obj = coerce(val, obj_t) }					\
+		);																									\
 	})
+
+#define ionInsert(object_, key_, value_) 																	\
+({																											\
+	obj_t object = (object_);																				\
+	typeof(key_) key = (key_); 																				\
+	typeof(value_) value = (value_); 																		\
+	_Generic((value), 																						\
+		string: insertStringEntry(object, string(key), coerce(string(value), string)),						\
+		char *: insertStringEntry(object, string(key), coerce(string(value), string)),						\
+		const char *: insertStringEntry(object, string(key), coerce(string(value), string)),				\
+		array_t: insertArrayEntry(object, string(key), coerce(value, array_t)),								\
+		number_t: insertNumberEntry(object, string(key), coerce(makeNumber(value), number_t)),				\
+		obj_t: insertSubobjectEntry(object, string(key), coerce(value, obj_t)),								\
+		bool: insertBoolEntry(object, string(key), coerce(value, bool)),									\
+		nullptr_t: insertNullEntry(object, string(key)),													\
+	);																										\		
+})
 
 obj_t createEmptyObject(void);
 obj_t insertObjectEntry(obj_t obj, string key, obj_t_value_t value);
@@ -120,6 +137,7 @@ void destroyObject(obj_t obj);
 
 string objectToJson(obj_t obj, string external);
 string arrayToJson(array_t arr, string external);
+string numberToString(number_t number);
 
 array_t createEmptyArray(void);
 array_t insertIntoArray(array_t arr, obj_t_value_t value);
