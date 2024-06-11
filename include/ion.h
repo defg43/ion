@@ -98,12 +98,12 @@ struct obj_t_value_t {
 
 #define objectValue(val_) 																			\
 	({																								\
-		auto val = (val_);																			\
+		typeof(val_) val = (val_);																			\
 		_Generic((val),																				\
-			string: { .discriminant = obj_t_string, .str = coerce(val, string) },					\
-			array_t: { .discriminant = obj_t_array, .arr = coerce(val, array_t) },					\
-			number_t: { .discriminant = obj_t_number, .num = coerce(val, number_t) },				\
-			obj_t: { .discriminant = obj_t_obj, .obj = coerce(val, obj_t) }							\
+			string: (obj_t_value_t) { .discriminant = obj_t_string, .str = coerce(val, string) },					\
+			array_t: (obj_t_value_t) { .discriminant = obj_t_array, .arr = coerce(val, array_t) },					\
+			number_t: (obj_t_value_t) { .discriminant = obj_t_number, .num = coerce(val, number_t) },				\
+			obj_t: (obj_t_value_t) { .discriminant = obj_t_obj, .obj = coerce(val, obj_t) }							\
 		);																							\
 	})
 
@@ -118,8 +118,8 @@ obj_t insertNullEntry(obj_t obj, string key);
 
 void destroyObject(obj_t obj);
 
-string objectToJson(obj_t obj);
-string arrayToJson(array_t arr);
+string objectToJson(obj_t obj, string external);
+string arrayToJson(array_t arr, string external);
 
 array_t createEmptyArray(void);
 array_t insertIntoArray(array_t arr, obj_t_value_t value);
