@@ -121,7 +121,7 @@ struct obj_t_value_t {
 		obj_t: insertSubobjectEntry(object, string(key), coerce(value, obj_t)),								\
 		bool: insertBoolEntry(object, string(key), coerce(value, bool)),									\
 		nullptr_t: insertNullEntry(object, string(key)),													\
-	);																										\		
+	);																										\
 })
 
 obj_t createEmptyObject(void);
