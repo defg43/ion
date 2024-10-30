@@ -171,6 +171,39 @@ string arrayToJson(array_t array, string external) {
     return ret;
 }
 
+obj_t JsonToObject(string json_string) {
+	// somehow this should parse a string and turn it into an object
+
+	size_t string_length = stringlen(json_string);
+	size_t remaining_length = string_length;
+	while(remaining_length --> 0) {
+		switch(json_string.at[string_length - remaining_length]) {
+			case '{':
+				break;
+			case '}':
+				break;
+			case '[':
+				break;
+			case ']':
+				break;
+			case '\'':
+				break;
+			case '"':
+				break;
+			case ',':
+				break;
+			case ':':
+				break;
+			default:
+				break;
+		}
+	}
+
+	invalid_json: 	// the string does not contain a valid json object
+					// something like null should be returned as the result
+	 
+}
+
 string objectToJson(obj_t object, string external) {
     string ret;
     if(external.data == NULL) {
