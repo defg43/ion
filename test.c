@@ -29,15 +29,17 @@ bool test() {
 #define literal_defered(x...) #x
 
 bool test2() {
-	string my_json_string = string(literal({"a" : ["b", 2, true]}));
+	string my_json_string = string(literal({"a" : "b", "c" : "d"}));
 	obj_t testobj = jsonToObject(my_json_string);
 	printf("the original json string is %s\n", my_json_string);
-	string new_json_string = objectToJson(testobj, (string) {} );
+	string new_json_string = string("");
+	new_json_string = objectToJson(testobj, new_json_string);
 	printf("the new string is %s\n", new_json_string);
+	printf("inside of the object there is the key >%s<\n", testobj.key[0]);
 
-	destroyString(new_json_string);
-	destroyString(my_json_string);
-	destroyObject(testobj);
+//	destroyString(new_json_string);
+//	destroyString(my_json_string);
+//	destroyObject(testobj);
 	return true;	
 }
 

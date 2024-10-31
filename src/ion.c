@@ -251,12 +251,12 @@ number_t parseNumber(string json, size_t *pos) {
 
 array_t parseArray(string json, size_t *pos) {
     array_t array = createEmptyArray();
-    // (*pos)++; // Skip '['
+    (*pos)++; // Skip '['
     consumeWhitespace(&json, pos);
 
     while (*pos < stringlen(json) && json.at[*pos] != ']') {
         obj_t_value_t element = parseValue(json, pos);
-        insertIntoArray(array, element);
+        array = insertIntoArray(array, element);
 
         consumeWhitespace(&json, pos);
         if (json.at[*pos] == ',') {
@@ -287,7 +287,7 @@ obj_t parseObject(string json, size_t *pos) {
 
         obj_t_value_t value = parseValue(json, pos);
 	    
-        insertObjectEntry(obj, key, value);
+        obj = insertObjectEntry(obj, key, value);
 	
         consumeWhitespace(&json, pos);
         if (json.at[*pos] == ',') {
