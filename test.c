@@ -21,10 +21,27 @@ bool test() {
     printf("allocated size for json: %ld\n", stringbytesalloced(json));
     destroyObject(obj);
     destroyString(json);
+
     return true;
 }
 
+#define literal(x...) literal_defered(x)
+#define literal_defered(x...) #x
+
+bool test2() {
+	string my_json_string = string(literal({"a" : ["b", 2, true]}));
+	obj_t testobj = jsonToObject(my_json_string);
+	printf("the original json string is %s\n", my_json_string);
+	string new_json_string = objectToJson(testobj, (string) {} );
+	printf("the new string is %s\n", new_json_string);
+
+	destroyString(new_json_string);
+	destroyString(my_json_string);
+	destroyObject(testobj);
+	return true;	
+}
+
 int main() {
-    test();
+    test2();
     return 0;
 }

@@ -139,6 +139,14 @@ string objectToJson(obj_t obj, string external);
 string arrayToJson(array_t arr, string external);
 string numberToString(number_t number);
 
+obj_t jsonToObject(string json_string);
+
+obj_t_value_t parseValue(string json, size_t *pos);
+number_t parseNumber(string json, size_t *pos);
+array_t parseArray(string json, size_t *pos);
+obj_t parseObject(string json, size_t *pos);
+obj_t_value_t parseValue(string json, size_t *pos);
+
 array_t createEmptyArray(void);
 array_t insertIntoArray(array_t arr, obj_t_value_t value);
 void destroyArray(array_t arr);
