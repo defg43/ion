@@ -228,8 +228,15 @@ bool parseNumber(string json, size_t *pos, obj_t_value_t *result) {
 	
 	if(json.at[*pos] == '.') {
 		while(json.at[*pos] && isdigit(json.at[*pos])) {
-			
+			 y += json.at[*pos] - '0';
+    y /= 10;
+    (*pos)++;
 		}
+  y = x + y;
+  if(sign) {
+   y = -y;
+  }
+  // save in result
 		
 	} else if(isspace(json.at[*pos])) {
 		// assemble number and return
