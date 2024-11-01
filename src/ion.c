@@ -184,6 +184,68 @@ void consumeWhitespace(string *json, size_t *pos) {
     }
 }
 
+bool parseKey(string json, size_t *pos, obj_t_key_t *result);
+bool parseValue(string json, size_t *pos, obj_t_value_t *result);
+bool parseNumber(string json, size_t *pos, obj_t_value_t *result);
+bool parseString(string json, size_t *pos, obj_t_value_t *result);
+bool parsePrimitive(string json, size_t *pos, obj_t_value_t *result);
+bool parseObject(string json, size_t *pos, obj_t_value_t *result);
+bool parseArray(string json, size_t *pos, obj_t_value_t *result);
+
+
+
+bool parseKey(string json, size_t *pos, obj_t_key_t *result) {
+	return parseString(json, pos, result);
+}
+
+bool parseValue(string json, size_t *pos, obj_t_value_t *result) {
+	return parseNumber(json, pos, result) 
+		|| parseString(json, pos, result)
+		|| parsePrimitive(json, pos, result)
+		|| parseObject(json, pos, result)
+		|| parseArray(json, pos, result);	
+}
+
+bool parseNumber(string json, size_t *pos, obj_t_value_t *result) {
+	bool sign = false;
+	bool success = false;
+	// x.y
+	uint64_t x = 0;
+	double y = 0;
+
+	consumeWhitespace(&json, pos);
+
+	if(json.at[*pos] == '-') {
+		sign = true;
+		(*pos)++;
+	}
+		
+	while(json.at[*pos] && isdigit(json.at[*pos])) {
+		x *= 10;
+		x += json.at[*pos] - '0';
+		(*pos)++;
+	}
+	
+	if(json.at[*pos] == '.') {
+		while(json.at[*pos] && isdigit(json.at[*pos])) {
+			
+		}
+		
+	} else if(isspace(json.at[*pos])) {
+		// assemble number and return
+		success = true;
+	}
+	
+	return success;
+}
+
+bool parseString(string json, size_t *pos, obj_t_value_t *result) {}
+bool parsePrimitive(string json, size_t *pos, obj_t_value_t *result) {}
+bool parseObject(string json, size_t *pos, obj_t_value_t *result) {}
+bool parseArray(string json, size_t *pos, obj_t_value_t *result) {}
+
+
+#if 0
 // Parses a JSON string (e.g., "example") and returns as `string` type
 string parseString(string json, size_t *pos) {
     string result = string("");
@@ -353,6 +415,8 @@ error:
     result.discriminant = obj_t_null;
     return result;
 }
+
+#endif // 0
 
 obj_t jsonToObject(string json_string) {
     size_t pos = 0;
