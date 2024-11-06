@@ -305,14 +305,26 @@ bool parseString(string json, size_t *pos, obj_t_value_t *result) {
 
 bool parsePrimitive(string json, size_t *pos, obj_t_value_t *result) {
 	if(streql(&json.at[*pos], "true")) {
-		
+		*result = (obj_t_value_t) {
+			.discriminant = obj_t_true,
+		};
+		return true;
 	}
+	
 	if(streql(&json.at[*pos], "false")) {
-		
+		*result = (obj_t_value_t) {
+			.discriminant = obj_t_false,
+		};
+		return true;
 	}
+	
 	if(streql(&json.at[*pos], "null")) {
-		
+		*result = (obj_t_value_t) {
+			.discriminant = obj_t_null,
+		};
+		return true;
 	}
+	return false;
 }
 
 bool parseObject(string json, size_t *pos, obj_t_value_t *result) {}

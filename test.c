@@ -67,7 +67,30 @@ bool test4() {
 	destroyString(str);
 }
 
+bool test5() {
+	string n = string("null");
+	string t = string("true");
+	string f = string("false");
+
+	size_t pos = 0;
+	obj_t_value_t result;
+
+	parsePrimitive(n, &pos, &result);
+	pos = 0;
+	printf("the result discriminant is %d\n", result.discriminant);
+
+	parsePrimitive(t, &pos, &result);
+	pos = 0;
+	printf("the result discriminant is %d\n", result.discriminant);
+
+	parsePrimitive(f, &pos, &result);
+	pos = 0;
+	printf("the result discriminant is %d\n", result.discriminant);
+
+	return true;
+}
+
 int main() {
-    test4();
+    test5();
     return 0;
 }
