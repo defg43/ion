@@ -1,3 +1,4 @@
+
 #include "include/ion.h"
 #include <stdio.h>
 #include <stdbool.h>
@@ -43,7 +44,30 @@ bool test2() {
 	return true;	
 }
 
+bool test3() {
+	string num = string("1234.5678");
+	size_t pos = 0;
+	obj_t_value_t result;
+	printf("parsing successful: %s\n", parseNumber(num, &pos, &result) ? "true" : "false");
+	printf("the result was %0.17f | %ld\n", result.num.as_double, result.num.as_int64_t);
+
+	destroyString(num);
+
+	return true;
+}
+
+bool test4() {
+	string str = string("\"test here\\\"\"");
+	size_t pos = 0;
+	obj_t_value_t result;
+
+	printf("parsing successful: %s\n", parseString(str, &pos, &result) ? "true" : "false");
+	printf("the result was %s\n", result.str);
+	
+	destroyString(str);
+}
+
 int main() {
-    test2();
+    test4();
     return 0;
 }

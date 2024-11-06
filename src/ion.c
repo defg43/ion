@@ -10,7 +10,6 @@
 
 // this prototypes are only function internal could be exported in future
 void consumeWhitespace(string *json, size_t *pos);
-string parseString(string json, size_t *pos);
 
 obj_t createEmptyObject() {
     return (obj_t) {
@@ -184,7 +183,7 @@ void consumeWhitespace(string *json, size_t *pos) {
     }
 }
 
-bool parseKey(string json, size_t *pos, obj_t_key_t *result);
+bool parseKey(string json, size_t *pos, string *result);
 bool parseValue(string json, size_t *pos, obj_t_value_t *result);
 bool parseNumber(string json, size_t *pos, obj_t_value_t *result);
 bool parseString(string json, size_t *pos, obj_t_value_t *result);
@@ -194,8 +193,16 @@ bool parseArray(string json, size_t *pos, obj_t_value_t *result);
 
 
 
-bool parseKey(string json, size_t *pos, obj_t_key_t *result) {
-	return parseString(json, pos, result);
+bool parseKey(string json, size_t *pos, string *result) {
+	bool success = false;
+	obj_t_value_t *val;
+	success = parseString(json, pos, val);
+	if(success) {
+		// if there is anything in result destroy it
+		destroyString(*result);
+		*result = val->str;
+	}
+	return success;
 }
 
 bool parseValue(string json, size_t *pos, obj_t_value_t *result) {
@@ -219,6 +226,10 @@ bool parseNumber(string json, size_t *pos, obj_t_value_t *result) {
 		sign = true;
 		(*pos)++;
 	}
+
+	if(!isdigit(json.at[*pos])) {
+		return false;
+	}
 		
 	while(json.at[*pos] && isdigit(json.at[*pos])) {
 		x *= 10;
@@ -227,27 +238,83 @@ bool parseNumber(string json, size_t *pos, obj_t_value_t *result) {
 	}
 	
 	if(json.at[*pos] == '.') {
-		while(json.at[*pos] && isdigit(json.at[*pos])) {
-			 y += json.at[*pos] - '0';
-    y /= 10;
-    (*pos)++;
+		(*pos)++;
+		if(!isdigit(json.at[*pos])) {
+			return false;
 		}
-  y = x + y;
-  if(sign) {
-   y = -y;
-  }
-  // save in result
-		
-	} else if(isspace(json.at[*pos])) {
-		// assemble number and return
+		while(json.at[*pos] && isdigit(json.at[*pos])) {
+			y += json.at[*pos] - '0';
+    		y *= 10;
+    		(*pos)++;
+		}
+		while((y /= 10) > 1.0);		
+  		y = x + y;
+		y = sign ? -y : y;
+
+		*result = (obj_t_value_t) {
+			.discriminant = obj_t_number,
+			.num = (number_t) {
+				.number_discriminant = number_t_double,
+				.as_double = y,
+			},
+		};
 		success = true;
+		return success;
+  		
+	} else {
+
+		if(sign) {
+			x = -x;
+		}
+
+		*result = (obj_t_value_t) {
+			.discriminant = obj_t_number,
+			.num = sign ? (number_t) {
+					.number_discriminant = number_t_uint64_t,
+					.as_uint64_t = x,
+				} : (number_t) {
+					.number_discriminant = number_t_int64_t,
+					.as_int64_t = x,
+				}
+		};
+		success = true;
+		return true;
 	}
-	
 	return success;
 }
 
-bool parseString(string json, size_t *pos, obj_t_value_t *result) {}
-bool parsePrimitive(string json, size_t *pos, obj_t_value_t *result) {}
+bool parseString(string json, size_t *pos, obj_t_value_t *result) {
+	if(json.at[*pos] != '"') {
+		return false;
+	}
+	(*pos)++;
+	size_t delta = 0;
+	size_t start = *pos;
+	while((*pos)++, delta++, json.at[*pos] && (json.at[*pos] != '"' || json.at[*pos - 1] == '\\'));
+	if(json.at[*pos] == '"') {
+		string substr = sliceFromString(json, start, start + delta);
+		*result = (obj_t_value_t) {
+			.discriminant = obj_t_string,
+			.str = substr,
+		};
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool parsePrimitive(string json, size_t *pos, obj_t_value_t *result) {
+	if(streql(&json.at[*pos], "true")) {
+		
+	}
+	if(streql(&json.at[*pos], "false")) {
+		
+	}
+	if(streql(&json.at[*pos], "null")) {
+		
+	}
+}
+
 bool parseObject(string json, size_t *pos, obj_t_value_t *result) {}
 bool parseArray(string json, size_t *pos, obj_t_value_t *result) {}
 
@@ -430,7 +497,8 @@ obj_t jsonToObject(string json_string) {
     consumeWhitespace(&json_string, &pos);
 
     if (json_string.at[pos] == '{') {
-        return parseObject(json_string, &pos);
+        // return parseObject(json_string, &pos);
+		return createEmptyObject();
     }
     
     return (obj_t){NULL, NULL, 0, NULL}; // basically null

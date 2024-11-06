@@ -141,11 +141,13 @@ string numberToString(number_t number);
 
 obj_t jsonToObject(string json_string);
 
-obj_t_value_t parseValue(string json, size_t *pos);
-number_t parseNumber(string json, size_t *pos);
-array_t parseArray(string json, size_t *pos);
-obj_t parseObject(string json, size_t *pos);
-obj_t_value_t parseValue(string json, size_t *pos);
+bool parseKey(string json, size_t *pos, string *result);
+bool parseValue(string json, size_t *pos, obj_t_value_t *result);
+bool parseNumber(string json, size_t *pos, obj_t_value_t *result);
+bool parseString(string json, size_t *pos, obj_t_value_t *result);
+bool parsePrimitive(string json, size_t *pos, obj_t_value_t *result);
+bool parseObject(string json, size_t *pos, obj_t_value_t *result);
+bool parseArray(string json, size_t *pos, obj_t_value_t *result);
 
 array_t createEmptyArray(void);
 array_t insertIntoArray(array_t arr, obj_t_value_t value);
