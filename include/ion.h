@@ -135,8 +135,8 @@ obj_t insertNullEntry(obj_t obj, string key);
 
 void destroyObject(obj_t obj);
 
-string objectToJson(obj_t obj, string external);
-string arrayToJson(array_t arr, string external);
+string objectToJson(obj_t obj);
+string arrayToJson(array_t arr);
 string numberToString(number_t number);
 
 obj_t jsonToObject(string json_string);

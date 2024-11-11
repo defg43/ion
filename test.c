@@ -17,7 +17,7 @@ bool test1() {
     obj = insertBoolEntry(obj, string("val2"), false);
     obj = insertNullEntry(obj, string("val3"));
 
-    string json = objectToJson(obj, (string) {NULL});
+    string json = objectToJson(obj);
 
     printf("%s\n", json);
     printf("allocated size for json: %ld\n", stringbytesalloced(json));
@@ -35,7 +35,7 @@ bool test2() {
 	obj_t testobj = jsonToObject(my_json_string);
 	printf("the original json string is %s\n", my_json_string);
 	string new_json_string = string("");
-	new_json_string = objectToJson(testobj, new_json_string);
+	new_json_string = objectToJson(testobj);
 	printf("the new string is %s\n", new_json_string);
 	printf("inside of the object there is the key >%s<\n", testobj.key[0]);
 
@@ -101,7 +101,7 @@ bool test6() {
 //	string json = string(literal({"a" : ["b"]}));
 	obj_t obj = createEmptyObject();
 	obj = jsonToObject(json);
-	string output = objectToJson(obj, (string) {});
+	string output = objectToJson(obj);
 	printf("%s\n", output);
 	return true;
 }

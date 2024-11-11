@@ -143,13 +143,9 @@ obj_t insertNullEntry(obj_t object, string key) {
     return object;
 }
 
-string arrayToJson(array_t array, string external) {
+string arrayToJson(array_t array) {
     string ret;
-    if(external.data == NULL) {
         ret =  string("[");
-    } else {
-        ret = append(external, "[");
-    }
     for (size_t i = 0; i < array.count; i++) {
         switch(array.array[i].discriminant) {
             case obj_t_string:
@@ -158,10 +154,10 @@ string arrayToJson(array_t array, string external) {
                 ret = append(ret, "\"");
             break;
             case obj_t_array:
-                ret = arrayToJson(array.array[i].arr, ret);
+                ret = arrayToJson(array.array[i].arr);
             break;
             case obj_t_obj: 
-                ret = objectToJson(array.array[i].obj, ret);
+                ret = objectToJson(array.array[i].obj);
             break;
             case obj_t_null:
             	ret = append(ret, "null");
@@ -180,7 +176,7 @@ string arrayToJson(array_t array, string external) {
             default:
         }
         if(i < array.count - 1) {
-            ret = append(ret, ",");
+            ret = append(ret, ", ");
         }
     }
     ret = append(ret, "]");
@@ -472,13 +468,9 @@ obj_t jsonToObject(string json_string) {
 	return ret;		
 }
 
-string objectToJson(obj_t object, string external) {
+string objectToJson(obj_t object) {
     string ret;
-    if(external.data == NULL) {
-        ret =  string("{");
-    } else {
-        ret = append(external, "{");
-    }
+    ret =  string("{");
     printf("json: there are currently %ld entries\n", object.count);
     for (size_t i = 0; i < object.count; i++) {
         ret = append(ret, "\"");
@@ -493,10 +485,14 @@ string objectToJson(obj_t object, string external) {
                 ret = append(ret, "\"");
             break;
             case obj_t_array:
-                ret = arrayToJson(object.value[i].arr, ret);
+                string array_result = arrayToJson(object.value[i].arr);
+                ret = append(ret, array_result);
+                destroyString(array_result);
             break;
             case obj_t_obj:
-                ret = objectToJson(object.value[i].obj, ret);
+                string object_result = objectToJson(object.value[i].obj);
+                ret = append(ret, object_result);
+                destroyString(object_result);
             break;
             case obj_t_null:
                 ret = append(ret, "null");
