@@ -1,9 +1,10 @@
 
 #include "include/ion.h"
+#include "witc/foreach.h"
 #include <stdio.h>
 #include <stdbool.h>
 
-bool test() {
+bool test1() {
     obj_t obj = createEmptyObject();
     obj = insertStringEntry(obj, string("hello"), string("world"));
     obj = insertNumberEntry(obj, string("number"), makeNumber(2.275));
@@ -65,6 +66,7 @@ bool test4() {
 	printf("the result was %s\n", result.str);
 	
 	destroyString(str);
+	return true;
 }
 
 bool test5() {
@@ -87,10 +89,35 @@ bool test5() {
 	pos = 0;
 	printf("the result discriminant is %d\n", result.discriminant);
 
+	destroyString(n);
+	destroyString(t);
+	destroyString(f);
+	
+	return true;
+}
+
+bool test6() {
+	string json = string(literal({"a" : "b", "c" : [1, 2, 3, "xyz", true, false, null]}));
+//	string json = string(literal({"a" : ["b"]}));
+	obj_t obj = createEmptyObject();
+	obj = jsonToObject(json);
+	string output = objectToJson(obj, (string) {});
+	printf("%s\n", output);
 	return true;
 }
 
 int main() {
-    test5();
+	typeof(bool (*)(void)) tests[] = {
+		/*test1, 
+		test2, 
+		test3, 
+		test4, 
+		test5, */ 
+		test6,
+	};
+
+    foreach(typeof(bool (*)(void)) test of tests) {
+    	assert(test());
+    }
     return 0;
 }

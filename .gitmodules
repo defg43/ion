@@ -1,3 +1,6 @@
 [submodule "str"]
 	path = str
 	url = git@github.com:defg43/str.git
+[submodule "witc"]
+	path = witc
+	url = git@github.com:defg43/witc.git

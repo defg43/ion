@@ -1,4 +1,5 @@
 #include "../include/ion.h"
+#include "../witc/foreach.h"
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -162,11 +163,21 @@ string arrayToJson(array_t array, string external) {
             case obj_t_obj: 
                 ret = objectToJson(array.array[i].obj, ret);
             break;
-            default:
+            case obj_t_null:
+            	ret = append(ret, "null");
+            break;
+            case obj_t_true:
+            	ret = append(ret, "true");
+            break;
+            case obj_t_false:
+            	ret = append(ret, "false");
+            break;
+            case obj_t_number:
                 string temp = numberToString(array.array[i].num);
                 ret = append(ret, temp);
                 destroyString(temp);
             break;
+            default:
         }
         if(i < array.count - 1) {
             ret = append(ret, ",");
@@ -183,6 +194,8 @@ void consumeWhitespace(string *json, size_t *pos) {
     }
 }
 
+typedef typeof(bool (*)(string, size_t *, obj_t_value_t *)) ion_json_parser_t;
+
 bool parseKey(string json, size_t *pos, string *result);
 bool parseValue(string json, size_t *pos, obj_t_value_t *result);
 bool parseNumber(string json, size_t *pos, obj_t_value_t *result);
@@ -195,22 +208,33 @@ bool parseArray(string json, size_t *pos, obj_t_value_t *result);
 
 bool parseKey(string json, size_t *pos, string *result) {
 	bool success = false;
-	obj_t_value_t *val;
-	success = parseString(json, pos, val);
+	obj_t_value_t val = {};
+	success = parseString(json, pos, &val);
 	if(success) {
 		// if there is anything in result destroy it
-		destroyString(*result);
-		*result = val->str;
+		*result = val.str;
 	}
 	return success;
 }
 
+ 
 bool parseValue(string json, size_t *pos, obj_t_value_t *result) {
-	return parseNumber(json, pos, result) 
-		|| parseString(json, pos, result)
-		|| parsePrimitive(json, pos, result)
-		|| parseObject(json, pos, result)
-		|| parseArray(json, pos, result);	
+	size_t starting_pos = *pos;
+
+	ion_json_parser_t parsers[] = {
+		parseNumber,
+		parseString,
+		parsePrimitive,
+		parseObject,
+		parseArray,
+	};	
+
+	foreach(ion_json_parser_t parser of parsers) if(!parser(json, pos, result)) {
+		*pos = starting_pos;
+	} else {
+		return true;
+	}
+	return false;
 }
 
 bool parseNumber(string json, size_t *pos, obj_t_value_t *result) {
@@ -287,6 +311,7 @@ bool parseString(string json, size_t *pos, obj_t_value_t *result) {
 	if(json.at[*pos] != '"') {
 		return false;
 	}
+	size_t starting_pos = *pos;
 	(*pos)++;
 	size_t delta = 0;
 	size_t start = *pos;
@@ -297,8 +322,10 @@ bool parseString(string json, size_t *pos, obj_t_value_t *result) {
 			.discriminant = obj_t_string,
 			.str = substr,
 		};
+		(*pos)++; // skipping the last "
 		return true;
 	} else {
+		*pos = starting_pos;
 		return false;
 	}
 }
@@ -308,6 +335,7 @@ bool parsePrimitive(string json, size_t *pos, obj_t_value_t *result) {
 		*result = (obj_t_value_t) {
 			.discriminant = obj_t_true,
 		};
+		*pos += 4;
 		return true;
 	}
 	
@@ -315,6 +343,7 @@ bool parsePrimitive(string json, size_t *pos, obj_t_value_t *result) {
 		*result = (obj_t_value_t) {
 			.discriminant = obj_t_false,
 		};
+		*pos += 5;
 		return true;
 	}
 	
@@ -322,235 +351,125 @@ bool parsePrimitive(string json, size_t *pos, obj_t_value_t *result) {
 		*result = (obj_t_value_t) {
 			.discriminant = obj_t_null,
 		};
+		*pos += 4;
 		return true;
 	}
 	return false;
 }
 
-bool parseObject(string json, size_t *pos, obj_t_value_t *result) {}
-bool parseArray(string json, size_t *pos, obj_t_value_t *result) {}
-
-
-#if 0
-// Parses a JSON string (e.g., "example") and returns as `string` type
-string parseString(string json, size_t *pos) {
-    string result = string("");
-    printf("string: %s, pos: %ld\n", json, *pos); 
-
-    if (json.at[*pos] != '"') {
-        destroyString(result);
-        return stringFromCharPtr(""); 
-    }
-    
-    (*pos)++; 
-
-    while (*pos < stringlen(json)) {
-        char c = json.at[*pos];
-
-        if (c == '"') {
-            (*pos)++; 
-            return result; 
-        }
-
-        if (c == '\\') {
-            (*pos)++; 
-            if (*pos >= stringlen(json)) break; 
-
-            switch (json.at[*pos]) {
-                case '"':  append(result, "\""); break;
-                case '\\': append(result, "\\"); break;
-                case '/':  append(result, "/"); break;
-                case 'b':  append(result, "\b"); break;
-                case 'f':  append(result, "\f"); break;
-                case 'n':  append(result, "\n"); break;
-                case 'r':  append(result, "\r"); break;
-                case 't':  append(result, "\t"); break;
-                default:   
-                    destroyString(result);
-                    return stringFromCharPtr(""); 
-            }
-        } else {
-            char temp[2] = { c, '\0' };
-            append(result, temp);
-        }
-        (*pos)++; 
-    }
-
-    destroyString(result);
-    return stringFromCharPtr(""); 
-}
-
-
-number_t parseNumber(string json, size_t *pos) {
-    size_t start = *pos;
-
-    // Allow digits, decimal points, and signs
-    while (*pos < stringlen(json) && (isdigit(json.at[*pos]) || json.at[*pos] == '.' || json.at[*pos] == '-')) {
-        (*pos)++;
-    }
-
-    string number_str = sliceFromString(json, start, *pos - start);
-    double number_value = atof(number_str.at); // Basic parsing of the number
-
-    destroyString(number_str);
-
-    return (number_t){ .number_discriminant = number_t_double, .as_double = number_value };
-}
-
-array_t parseArray(string json, size_t *pos) {
-    array_t array = createEmptyArray();
-    (*pos)++; // Skip '['
-    consumeWhitespace(&json, pos);
-
-    while (*pos < stringlen(json) && json.at[*pos] != ']') {
-        obj_t_value_t element = parseValue(json, pos);
-        array = insertIntoArray(array, element);
-
-        consumeWhitespace(&json, pos);
-        if (json.at[*pos] == ',') {
-            (*pos)++;
-            consumeWhitespace(&json, pos);
-        }
-    }
-    (*pos)++; // Skip ']'
-
-    return array;
-}
-
-obj_t parseObject(string json, size_t *pos) {
-    obj_t obj = createEmptyObject();
-    (*pos)++; // Skip '{'
-    consumeWhitespace(&json, pos);
-	
-    while (*pos < stringlen(json) && json.at[*pos] != '}') {
-	    string key = parseString(json, pos);
-	
-        consumeWhitespace(&json, pos);
-        if (json.at[*pos] != ':') {
-            // Handle error
-            destroyString(key);
-            goto invalid_json;
-        }
-	    (*pos)++; // Skip ':'
-
-        obj_t_value_t value = parseValue(json, pos);
-	    
-        obj = insertObjectEntry(obj, key, value);
-	
-        consumeWhitespace(&json, pos);
-        if (json.at[*pos] == ',') {
-            (*pos)++;
-            consumeWhitespace(&json, pos);
-        }
-        destroyString(key);
-    }
-    (*pos)++; // Skip '}'
-	printf("got here\n");
-    return obj;
-
-invalid_json:
-    destroyObject(obj);
-    return (obj_t){NULL, NULL, 0, NULL}; // Return invalid object on error, basically null
-}
-
-obj_t_value_t parseValue(string json, size_t *pos) {
-	printf("%s\n", json);
-	printf("%ld\n", *pos);
-    while (*pos < stringlen(json) && isspace(json.at[*pos])) (*pos)++; 
-	static size_t previous_pos = 0;
-
-	
-	if(*pos == previous_pos && *pos != 0) {
-		printf("stuck");
-		exit(EXIT_FAILURE);
+bool parseObject(string json, size_t *pos, obj_t_value_t *result) {
+	size_t starting_pos = *pos;
+	consumeWhitespace(&json, pos);
+	if(json.at[*pos] == '{') {
+		(*pos)++;
+	} else {
+		return false;
 	}
-	previous_pos = *pos;
-    obj_t_value_t result;
+	
+	// iterate over entires
 
-    char c = json.at[*pos];
-    if (c == '"') {
-        result.discriminant = obj_t_string;
-        result.str = parseString(json, pos);
-    } else if (c == '{') {
-        (*pos)++;
-        result.discriminant = obj_t_obj;
-        result.obj = parseObject(json, pos); 
-    } else if (c == '[') {
-        (*pos)++;
-        result.discriminant = obj_t_array;
-        result.arr = parseArray(json, pos); 
-    } else if (isdigit(c) || c == '-' || c == '+') {
-        result.discriminant = obj_t_number;
-        result.num = parseNumber(json, pos); 
-    } else if (!strncmp(&json.at[*pos], "true", 4)) {
-        result.discriminant = obj_t_true;
-        *pos += 4;
-    } else if (!strncmp(&json.at[*pos], "false", 5)) {
-        result.discriminant = obj_t_false;
-        *pos += 5;
-    } else if (!strncmp(&json.at[*pos], "null", 4)) {
-        result.discriminant = obj_t_null;
-        *pos += 4;
-    } else {
-        goto error;
-    }
+	while(true) {
+		consumeWhitespace(&json, pos);
+		string key = {};
+		obj_t_value_t val = {};
 
-    return result;
+		if(json.at[*pos] == '}') {
+			goto success;
+		}
+	
+		if(parseKey(json, pos, &key)) {} else {
+			goto syntax_error;
+		}
 
-error:
-    result.discriminant = obj_t_null;
-    return result;
-}
+		consumeWhitespace(&json, pos);
 
-#endif // 0
+		if(json.at[*pos] == ':') {
+			(*pos)++;
+		} else {
+			goto syntax_error;
+		}
 
-obj_t jsonToObject(string json_string) {
-    size_t pos = 0;
-    consumeWhitespace(&json_string, &pos);
+		consumeWhitespace(&json, pos);
 
-    if (json_string.at[pos] == '{') {
-        // return parseObject(json_string, &pos);
-		return createEmptyObject();
-    }
-    
-    return (obj_t){NULL, NULL, 0, NULL}; // basically null
-}
+		if(parseValue(json, pos, &val)) {
+			result->obj = insertObjectEntry(result->obj, key, val);
+		} else {
+			goto syntax_error;
+		}
 
-obj_t JsonToObject_(string json_string) {
-	// somehow this should parse a string and turn it into an object
+		consumeWhitespace(&json, pos);
 
-	size_t string_length = stringlen(json_string);
-	size_t remaining_length = string_length;
-	while(remaining_length --> 0) {
-		// this should be fully implemented
-		switch(json_string.at[string_length - remaining_length]) {
-			case '{':
-				break;
-			case '}':
-				break;
-			case '[':
-				break;
-			case ']':
-				break;
-			case '\'':
-				break;
-			case '"':
-				break;
-			case ',':
-				break;
-			case ':':
-				break;
-			default:
-				break;
+		if(json.at[*pos] == ',') {
+			(*pos)++;
+			continue;
+		} else if(json.at[*pos] == '}') {
+			goto success;
+		} else {
+			goto syntax_error;
 		}
 	}
+	syntax_error:
+		destroyObject(result->obj);
+		*pos = starting_pos;
+		return false;
+	success:
+		(*pos)++;
+		result->discriminant = obj_t_obj;
+		return true;
+}
 
-	invalid_json: 	// the string does not contain a valid json object
-					// something like null should be returned as the result
-		return (obj_t) {
-			NULL, NULL, 0, NULL
-		};
-	 
+bool parseArray(string json, size_t *pos, obj_t_value_t *result) {
+	size_t starting_pos = *pos;
+	if(json.at[*pos] == '[') {
+		(*pos)++;
+	} else {
+		return false;
+	}
+	array_t arr = createEmptyArray();
+
+	while(true) {
+		obj_t_value_t val = {};
+		consumeWhitespace(&json, pos);		
+		if(json.at[*pos] == ']') {
+			goto success;
+		}
+		
+		if(parseValue(json, pos, &val)) {
+			arr = insertIntoArray(arr, val);
+		} else {
+			goto syntax_error;
+		}
+
+		consumeWhitespace(&json, pos);
+
+		if(json.at[*pos] == ',') {
+			(*pos)++;
+			continue;
+		} else if(json.at[*pos] == ']') {
+			goto success;
+		} else {
+			goto syntax_error;
+		}
+	}
+	syntax_error:
+		destroyArray(arr);
+		*pos = starting_pos;
+		return false;
+	success:
+		(*pos)++;
+		result->arr = arr;
+		result->discriminant = obj_t_array;
+		return true;
+}
+
+obj_t jsonToObject(string json_string) {
+	obj_t ret = createEmptyObject();
+	obj_t_value_t val = {};
+	size_t pos = 0;
+	if(parseObject(json_string, &pos, &val)) {
+		ret = val.obj;
+	}
+	return ret;		
 }
 
 string objectToJson(obj_t object, string external) {
