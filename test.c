@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 bool test1() {
-    obj_t obj = createEmptyObject();
+    object_t obj = createEmptyObject();
     obj = insertStringEntry(obj, string("hello"), string("world"));
     obj = insertNumberEntry(obj, string("number"), makeNumber(2.275));
     array_t arr = createEmptyArray();
@@ -32,7 +32,7 @@ bool test1() {
 
 bool test2() {
 	string my_json_string = string(literal({"a" : "b", "c" : "d"}));
-	obj_t testobj = jsonToObject(my_json_string);
+	object_t testobj = jsonToObject(my_json_string);
 	printf("the original json string is %s\n", my_json_string);
 	string new_json_string = string("");
 	new_json_string = objectToJson(testobj);
@@ -99,7 +99,7 @@ bool test5() {
 bool test6() {
 	string json = string(literal({"a" : "b", "c" : [1, 2, 3, "xyz", true, false, null]}));
 //	string json = string(literal({"a" : ["b"]}));
-	obj_t obj = createEmptyObject();
+	object_t obj = createEmptyObject();
 	obj = jsonToObject(json);
 	string output = objectToJson(obj);
 	printf("%s\n", output);
@@ -108,11 +108,13 @@ bool test6() {
 
 int main() {
 	typeof(bool (*)(void)) tests[] = {
-		/*test1, 
+		/*
+		test1, 
 		test2, 
 		test3, 
 		test4, 
-		test5, */ 
+		test5, 
+		*/ 
 		test6,
 	};
 

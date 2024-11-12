@@ -12,7 +12,7 @@
 #include <stddef.h>
 #include "../str/include/str.h"
 
-typedef struct obj_t obj_t;
+typedef struct object_t object_t;
 typedef struct obj_t_key_t obj_t_key_t;
 typedef struct obj_t_value_t obj_t_value_t;
 typedef void (*destructor_t)(void *ptr);
@@ -55,7 +55,7 @@ typedef enum : int8_t {
 } obj_t_discriminant_t;
 
 
-struct obj_t {
+struct object_t {
 	obj_t_key_t *key;
 	obj_t_value_t *value;
 	size_t count;
@@ -73,7 +73,7 @@ struct obj_t_value_t {
 		string str;
 		array_t arr;
 		number_t num;
-		obj_t obj;
+		object_t obj;
 	};
 };
 
@@ -124,22 +124,22 @@ struct obj_t_value_t {
 	);																										\
 })
 
-obj_t createEmptyObject(void);
-obj_t insertObjectEntry(obj_t obj, string key, obj_t_value_t value);
-obj_t insertSubobjectEntry(obj_t obj, string key, obj_t value);
-obj_t insertArrayEntry(obj_t obj, string key, array_t value);
-obj_t insertNumberEntry(obj_t obj, string key, number_t value);
-obj_t insertStringEntry(obj_t obj, string key, string value);
-obj_t insertBoolEntry(obj_t obj, string key, bool value);
-obj_t insertNullEntry(obj_t obj, string key);
+object_t createEmptyObject(void);
+object_t insertObjectEntry(object_t obj, string key, obj_t_value_t value);
+object_t insertSubobjectEntry(object_t obj, string key, object_t value);
+object_t insertArrayEntry(object_t obj, string key, array_t value);
+object_t insertNumberEntry(object_t obj, string key, number_t value);
+object_t insertStringEntry(object_t obj, string key, string value);
+object_t insertBoolEntry(object_t obj, string key, bool value);
+object_t insertNullEntry(object_t obj, string key);
 
-void destroyObject(obj_t obj);
+void destroyObject(object_t obj);
 
-string objectToJson(obj_t obj);
+string objectToJson(object_t obj);
 string arrayToJson(array_t arr);
 string numberToString(number_t number);
 
-obj_t jsonToObject(string json_string);
+object_t jsonToObject(string json_string);
 
 bool parseKey(string json, size_t *pos, string *result);
 bool parseValue(string json, size_t *pos, obj_t_value_t *result);

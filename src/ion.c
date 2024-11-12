@@ -12,8 +12,8 @@
 // this prototypes are only function internal could be exported in future
 void consumeWhitespace(string *json, size_t *pos);
 
-obj_t createEmptyObject() {
-    return (obj_t) {
+object_t createEmptyObject() {
+    return (object_t) {
         .key = NULL,
         .value = NULL,
         .count = 0,
@@ -21,7 +21,7 @@ obj_t createEmptyObject() {
     };
 };
 
-obj_t insertObjectEntry(obj_t object, string key, obj_t_value_t value) {
+object_t insertObjectEntry(object_t object, string key, obj_t_value_t value) {
     object.key = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
     object.value = realloc(object.value, sizeof(obj_t_value_t) * (object.count + 1));
     if(object.key == NULL || object.value == NULL) {
@@ -35,7 +35,7 @@ obj_t insertObjectEntry(obj_t object, string key, obj_t_value_t value) {
     return object;
 }
 
-obj_t insertSubobjectEntry(obj_t object, string key, obj_t value) {
+object_t insertSubobjectEntry(object_t object, string key, object_t value) {
     printf("there are currently %ld entries in the object\n", object.count);
     obj_t_key_t *key_ = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
     obj_t_value_t *value_ = realloc(object.value, sizeof(obj_t_value_t) * (object.count + 1));
@@ -53,7 +53,7 @@ obj_t insertSubobjectEntry(obj_t object, string key, obj_t value) {
     return object;
 }
 
-obj_t insertArrayEntry(obj_t object, string key, array_t value) {
+object_t insertArrayEntry(object_t object, string key, array_t value) {
     obj_t_key_t *key_ = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
     obj_t_value_t *value_ = realloc(object.value, sizeof(obj_t_value_t) * (object.count + 1));
     if(key_ == NULL || value_ == NULL) {
@@ -70,7 +70,7 @@ obj_t insertArrayEntry(obj_t object, string key, array_t value) {
     return object;
 }
 
-obj_t insertNumberEntry(obj_t object, string key, number_t value) {
+object_t insertNumberEntry(object_t object, string key, number_t value) {
     obj_t_key_t *key_ = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
     obj_t_value_t *value_ = realloc(object.value, sizeof(obj_t_value_t) * (object.count + 1));
     if(key_ == NULL || value_ == NULL) {
@@ -87,7 +87,7 @@ obj_t insertNumberEntry(obj_t object, string key, number_t value) {
     return object;
 }
 
-obj_t insertStringEntry(obj_t object, string key, string value) {
+object_t insertStringEntry(object_t object, string key, string value) {
     obj_t_key_t *key_ = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
     obj_t_value_t *value_ = realloc(object.value, sizeof(obj_t_value_t) * (object.count + 1));
     printf("key: %p\nvalue: %p\n", key, value);
@@ -107,7 +107,7 @@ obj_t insertStringEntry(obj_t object, string key, string value) {
     return object;
 }
 
-obj_t insertBoolEntry(obj_t object, string key, bool value) {
+object_t insertBoolEntry(object_t object, string key, bool value) {
     obj_t_key_t *key_ = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
     obj_t_value_t *value_ = realloc(object.value, sizeof(obj_t_value_t) * (object.count + 1));
     if(key_ == NULL || value_ == NULL) {
@@ -127,7 +127,7 @@ obj_t insertBoolEntry(obj_t object, string key, bool value) {
     return object;
 }
 
-obj_t insertNullEntry(obj_t object, string key) {
+object_t insertNullEntry(object_t object, string key) {
     obj_t_key_t *key_ = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
     obj_t_value_t *value_ = realloc(object.value, sizeof(obj_t_value_t) * (object.count + 1));
     if(key_ == NULL || value_ == NULL) {
@@ -458,8 +458,8 @@ bool parseArray(string json, size_t *pos, obj_t_value_t *result) {
 		return true;
 }
 
-obj_t jsonToObject(string json_string) {
-	obj_t ret = createEmptyObject();
+object_t jsonToObject(string json_string) {
+	object_t ret = createEmptyObject();
 	obj_t_value_t val = {};
 	size_t pos = 0;
 	if(parseObject(json_string, &pos, &val)) {
@@ -468,7 +468,7 @@ obj_t jsonToObject(string json_string) {
 	return ret;		
 }
 
-string objectToJson(obj_t object) {
+string objectToJson(object_t object) {
     string ret;
     ret =  string("{");
     printf("json: there are currently %ld entries\n", object.count);
@@ -642,7 +642,7 @@ void destroyArray(array_t array) {
     array.destructor(array.array);
 }
 
-void destroyObject(obj_t object) { 
+void destroyObject(object_t object) { 
     for(size_t i = 0; i < object.count; i++) {
         destroyString(object.key[i].name);
         switch(object.value[i].discriminant) {
