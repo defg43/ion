@@ -39,9 +39,9 @@ bool test2() {
 	printf("the new string is %s\n", new_json_string);
 	printf("inside of the object there is the key >%s<\n", testobj.key[0]);
 
-//	destroyString(new_json_string);
-//	destroyString(my_json_string);
-//	destroyObject(testobj);
+	destroyString(new_json_string);
+	destroyString(my_json_string);
+	destroyObject(testobj);
 	return true;	
 }
 
@@ -98,23 +98,23 @@ bool test5() {
 
 bool test6() {
 	string json = string(literal({"a" : "b", "c" : [1, 2, 3, "xyz", true, false, null]}));
-//	string json = string(literal({"a" : ["b"]}));
 	object_t obj = createEmptyObject();
 	obj = jsonToObject(json);
 	string output = objectToJson(obj);
 	printf("%s\n", output);
+
+	destroyString(output);
+	destroyObject(obj);
 	return true;
 }
 
 int main() {
 	typeof(bool (*)(void)) tests[] = {
-		/*
 		test1, 
 		test2, 
 		test3, 
 		test4, 
 		test5, 
-		*/ 
 		test6,
 	};
 

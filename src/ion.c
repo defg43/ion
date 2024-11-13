@@ -190,17 +190,6 @@ void consumeWhitespace(string *json, size_t *pos) {
     }
 }
 
-typedef typeof(bool (*)(string, size_t *, obj_t_value_t *)) ion_json_parser_t;
-
-bool parseKey(string json, size_t *pos, string *result);
-bool parseValue(string json, size_t *pos, obj_t_value_t *result);
-bool parseNumber(string json, size_t *pos, obj_t_value_t *result);
-bool parseString(string json, size_t *pos, obj_t_value_t *result);
-bool parsePrimitive(string json, size_t *pos, obj_t_value_t *result);
-bool parseObject(string json, size_t *pos, obj_t_value_t *result);
-bool parseArray(string json, size_t *pos, obj_t_value_t *result);
-
-
 
 bool parseKey(string json, size_t *pos, string *result) {
 	bool success = false;
@@ -694,4 +683,49 @@ array_t insertIntoArray(array_t arr, obj_t_value_t value) {
     arr.array[arr.count - 1] = value;
     return arr;
 }
-    
+
+int objcmp(object_t obj1, object_t obj2) {
+    size_t count = obj1.count < obj2.count ? obj1.count : obj2.count;
+    return objncmp(obj1, obj2, count);
+}
+
+int objncmp(object_t obj1, object_t obj2, size_t n) {
+    size_t i = 0;
+    while(i < obj1.count && i < obj2.count && i < n) {
+        // compare both keys and values
+        int val_res = valcmp(obj1.value[i], obj2.value[i]);
+        int str_res = stringcmp(obj1.key[i], obj2.key[i]);
+
+        if(val_res == 0 && str_res == 0) {
+            i++;
+            continue;
+        } else {
+            if(val_res != 0) {
+                return val_res;
+            } else {
+                return str_res;
+            }
+        }
+    }
+    return 0;
+}
+
+bool objeql(object_t obj1, object_t obj2);
+bool objneql(object_t obj1, object_t obj2, size_t n);
+bool objcontains(object_t obj, string key);
+obj_t_value_t objget(object_t obj, string key);
+object_t objcopy(object_t obj);
+bool objremove(object_t obj, string key);
+
+int arraycmp(array_t arr1, array_t arr2);
+int arrayncmp(array_t arr1, array_t arr2, size_t n);
+bool arrayeql(array_t arr1, array_t arr2);
+bool arrayneql(array_t arr1, array_t arr2, size_t n);
+obj_t_value_t arrayget(array_t arr, size_t index);
+array_t arraycopy(array_t arr);
+
+int valcmp(obj_t_value_t val1, obj_t_value_t val2);
+int valncmp(obj_t_value_t val1, obj_t_value_t val2, size_t n);
+bool valeql(obj_t_value_t val1, obj_t_value_t val2);
+bool valneql(obj_t_value_t val1, obj_t_value_t val2, size_t n);
+

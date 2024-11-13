@@ -16,6 +16,7 @@ typedef struct object_t object_t;
 typedef struct obj_t_key_t obj_t_key_t;
 typedef struct obj_t_value_t obj_t_value_t;
 typedef void (*destructor_t)(void *ptr);
+typedef typeof(bool (*)(string, size_t *, obj_t_value_t *)) ion_json_parser_t;
 
 typedef struct {
     obj_t_value_t *array;
@@ -56,7 +57,7 @@ typedef enum : int8_t {
 
 
 struct object_t {
-	obj_t_key_t *key;
+	/*obj_t_key_t*/ string *key;
 	obj_t_value_t *value;
 	size_t count;
 	destructor_t destructor;
@@ -103,7 +104,7 @@ struct obj_t_value_t {
 			string: (obj_t_value_t) { .discriminant = obj_t_string, .str = coerce(val, string) },			\
 			array_t: (obj_t_value_t) { .discriminant = obj_t_array, .arr = coerce(val, array_t) },			\
 			number_t: (obj_t_value_t) { .discriminant = obj_t_number, .num = coerce(val, number_t) },		\
-			obj_t: (obj_t_value_t) { .discriminant = obj_t_obj, .obj = coerce(val, obj_t) }					\
+			object_t: (obj_t_value_t) { .discriminant = obj_t_obj, .obj = coerce(val, object_t) }			\
 		);																									\
 	})
 
@@ -148,6 +149,27 @@ bool parseString(string json, size_t *pos, obj_t_value_t *result);
 bool parsePrimitive(string json, size_t *pos, obj_t_value_t *result);
 bool parseObject(string json, size_t *pos, obj_t_value_t *result);
 bool parseArray(string json, size_t *pos, obj_t_value_t *result);
+
+int objcmp(object_t obj1, object_t obj2);
+int objncmp(object_t obj1, object_t obj2, size_t n);
+bool objeql(object_t obj1, object_t obj2);
+bool objneql(object_t obj1, object_t obj2, size_t n);
+bool objcontains(object_t obj, string key);
+obj_t_value_t objget(object_t obj, string key);
+object_t objcopy(object_t obj);
+bool objremove(object_t obj, string key);
+
+int arraycmp(array_t arr1, array_t arr2);
+int arrayncmp(array_t arr1, array_t arr2, size_t n);
+bool arrayeql(array_t arr1, array_t arr2);
+bool arrayneql(array_t arr1, array_t arr2, size_t n);
+obj_t_value_t arrayget(array_t arr, size_t index);
+array_t arraycopy(array_t arr);
+
+int valuecmp(obj_t_value_t val1, obj_t_value_t val2);
+int valncmp(obj_t_value_t val1, obj_t_value_t val2, size_t n);
+bool valeql(obj_t_value_t val1, obj_t_value_t val2);
+bool valneql(obj_t_value_t val1, obj_t_value_t val2, size_t n);
 
 array_t createEmptyArray(void);
 array_t insertIntoArray(array_t arr, obj_t_value_t value);
