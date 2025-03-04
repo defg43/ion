@@ -166,7 +166,7 @@ bool arrayneql(array_t arr1, array_t arr2, size_t n);
 obj_t_value_t arrayget(array_t arr, size_t index);
 array_t arraycopy(array_t arr);
 
-int valuecmp(obj_t_value_t val1, obj_t_value_t val2);
+int valcmp(obj_t_value_t val1, obj_t_value_t val2);
 int valncmp(obj_t_value_t val1, obj_t_value_t val2, size_t n);
 bool valeql(obj_t_value_t val1, obj_t_value_t val2);
 bool valneql(obj_t_value_t val1, obj_t_value_t val2, size_t n);

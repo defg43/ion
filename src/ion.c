@@ -28,7 +28,7 @@ object_t insertObjectEntry(object_t object, string key, obj_t_value_t value) {
         fprintf(stderr, "failed to allocate memory in insertObjectEntry\n");
         exit(EXIT_FAILURE);
     } 
-    object.key[object.count].name = key; // key is just absorbed here and owned here from now on
+    object.key[object.count] = key; // key is just absorbed here and owned here from now on
     // this should be sourced from the string allocator backend once it is implemented
     object.value[object.count] = value;
     object.count++;
@@ -37,7 +37,7 @@ object_t insertObjectEntry(object_t object, string key, obj_t_value_t value) {
 
 object_t insertSubobjectEntry(object_t object, string key, object_t value) {
     printf("there are currently %ld entries in the object\n", object.count);
-    obj_t_key_t *key_ = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
+    string *key_ = realloc(object.key, sizeof(string) * (object.count + 1));
     obj_t_value_t *value_ = realloc(object.value, sizeof(obj_t_value_t) * (object.count + 1));
     if(key_ == NULL || value_ == NULL) {
         fprintf(stderr, "failed to allocate memory in insertSubobjectEntry\n");
@@ -45,7 +45,7 @@ object_t insertSubobjectEntry(object_t object, string key, object_t value) {
     } 
     object.key = key_;
     object.value = value_;
-    object.key[object.count].name = key; // key is just absorbed here and owned here from now on
+    object.key[object.count] = key; // key is just absorbed here and owned here from now on
     // this should be sourced from the string allocator backend once it is implemented
     object.value[object.count].discriminant = obj_t_obj;
     object.value[object.count].obj = value;
@@ -54,7 +54,7 @@ object_t insertSubobjectEntry(object_t object, string key, object_t value) {
 }
 
 object_t insertArrayEntry(object_t object, string key, array_t value) {
-    obj_t_key_t *key_ = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
+    string *key_ = realloc(object.key, sizeof(string) * (object.count + 1));
     obj_t_value_t *value_ = realloc(object.value, sizeof(obj_t_value_t) * (object.count + 1));
     if(key_ == NULL || value_ == NULL) {
         fprintf(stderr, "failed to allocate memory in insertArrayEntry\n");
@@ -62,7 +62,7 @@ object_t insertArrayEntry(object_t object, string key, array_t value) {
     } 
     object.key = key_;
     object.value = value_;
-    object.key[object.count].name = key; // key is just absorbed here and owned here from now on
+    object.key[object.count] = key; // key is just absorbed here and owned here from now on
     // this should be sourced from the string allocator backend once it is implemented
     object.value[object.count].discriminant = obj_t_array;
     object.value[object.count].arr = value;
@@ -71,7 +71,7 @@ object_t insertArrayEntry(object_t object, string key, array_t value) {
 }
 
 object_t insertNumberEntry(object_t object, string key, number_t value) {
-    obj_t_key_t *key_ = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
+    string *key_ = realloc(object.key, sizeof(string) * (object.count + 1));
     obj_t_value_t *value_ = realloc(object.value, sizeof(obj_t_value_t) * (object.count + 1));
     if(key_ == NULL || value_ == NULL) {
         fprintf(stderr, "failed to allocate memory in insertNumberEntry\n");
@@ -79,7 +79,7 @@ object_t insertNumberEntry(object_t object, string key, number_t value) {
     } 
     object.key = key_;
     object.value = value_;
-    object.key[object.count].name = key; // key is just absorbed here and owned here from now on
+    object.key[object.count] = key; // key is just absorbed here and owned here from now on
     // this should be sourced from the string allocator backend once it is implemented
     object.value[object.count].discriminant = obj_t_number;
     object.value[object.count].num = value;
@@ -88,7 +88,7 @@ object_t insertNumberEntry(object_t object, string key, number_t value) {
 }
 
 object_t insertStringEntry(object_t object, string key, string value) {
-    obj_t_key_t *key_ = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
+    string *key_ = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
     obj_t_value_t *value_ = realloc(object.value, sizeof(obj_t_value_t) * (object.count + 1));
     printf("key: %p\nvalue: %p\n", key, value);
     if(key_ == NULL || value_ == NULL) {
@@ -99,7 +99,7 @@ object_t insertStringEntry(object_t object, string key, string value) {
     object.value = value_;
     printf("the object entry count is %ld\n", object.count);
     printf("%p\n", object.key);
-    object.key[object.count].name = key; // key is just absorbed here and owned here from now on
+    object.key[object.count] = key; // key is just absorbed here and owned here from now on
     // this should be sourced from the string allocator backend once it is implemented
     object.value[object.count].discriminant = obj_t_string;
     object.value[object.count].str = value;
@@ -108,7 +108,7 @@ object_t insertStringEntry(object_t object, string key, string value) {
 }
 
 object_t insertBoolEntry(object_t object, string key, bool value) {
-    obj_t_key_t *key_ = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
+    string *key_ = realloc(object.key, sizeof(string) * (object.count + 1));
     obj_t_value_t *value_ = realloc(object.value, sizeof(obj_t_value_t) * (object.count + 1));
     if(key_ == NULL || value_ == NULL) {
         fprintf(stderr, "failed to allocate memory in insertBoolEntry\n");
@@ -116,7 +116,7 @@ object_t insertBoolEntry(object_t object, string key, bool value) {
     } 
     object.key = key_;
     object.value = value_;
-    object.key[object.count].name = key; // key is just absorbed here and owned here from now on
+    object.key[object.count] = key; // key is just absorbed here and owned here from now on
     // this should be sourced from the string allocator backend once it is implemented
     if(value) {
         object.value[object.count].discriminant = obj_t_true;
@@ -128,7 +128,7 @@ object_t insertBoolEntry(object_t object, string key, bool value) {
 }
 
 object_t insertNullEntry(object_t object, string key) {
-    obj_t_key_t *key_ = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
+    string *key_ = realloc(object.key, sizeof(string) * (object.count + 1));
     obj_t_value_t *value_ = realloc(object.value, sizeof(obj_t_value_t) * (object.count + 1));
     if(key_ == NULL || value_ == NULL) {
         fprintf(stderr, "failed to allocate memory in insertNullEntry\n");
@@ -136,7 +136,7 @@ object_t insertNullEntry(object_t object, string key) {
     } 
     object.key = key_;
     object.value = value_;
-    object.key[object.count].name = key; // key is just absorbed here and owned here from now on
+    object.key[object.count] = key; // key is just absorbed here and owned here from now on
     // this should be sourced from the string allocator backend once it is implemented
     object.value[object.count].discriminant = obj_t_null;
     object.count++;
@@ -463,7 +463,7 @@ string objectToJson(object_t object) {
     printf("json: there are currently %ld entries\n", object.count);
     for (size_t i = 0; i < object.count; i++) {
         ret = append(ret, "\"");
-        ret = append(ret, object.key[i].name);
+        ret = append(ret, object.key[i]);
         ret = append(ret, "\"");
         ret = append(ret, " : ");
 
@@ -633,7 +633,7 @@ void destroyArray(array_t array) {
 
 void destroyObject(object_t object) { 
     for(size_t i = 0; i < object.count; i++) {
-        destroyString(object.key[i].name);
+        destroyString(object.key[i]);
         switch(object.value[i].discriminant) {
             case obj_t_string:
                 destroyString(object.value[i].str);
@@ -710,10 +710,36 @@ int objncmp(object_t obj1, object_t obj2, size_t n) {
     return 0;
 }
 
-bool objeql(object_t obj1, object_t obj2);
-bool objneql(object_t obj1, object_t obj2, size_t n);
-bool objcontains(object_t obj, string key);
-obj_t_value_t objget(object_t obj, string key);
+bool objeql(object_t obj1, object_t obj2) {
+    return objncmp(obj1, obj2, obj1.count) == 0;
+}
+
+bool objneql(object_t obj1, object_t obj2, size_t n) {
+    return objncmp(obj1, obj2, n) == 0;
+}
+
+bool objcontains(object_t obj, string key) {
+    size_t n = obj.count;
+    while(n --> 0) {
+        if(stringeql(obj.key[n], key)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+obj_t_value_t objget(object_t obj, string key) {
+    size_t n = obj.count;
+    while(n --> 0) {
+        if(stringeql(obj.key[n], key)) {
+            return obj.value[n];
+        }
+    }
+    return (obj_t_value_t) {
+        .discriminant = obj_t_null,
+    }; 
+}
+
 object_t objcopy(object_t obj);
 bool objremove(object_t obj, string key);
 
