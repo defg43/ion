@@ -28,11 +28,7 @@ object_t insertObjectEntry(object_t object, string key, obj_t_value_t value) {
         fprintf(stderr, "failed to allocate memory in insertObjectEntry\n");
         exit(EXIT_FAILURE);
     } 
-<<<<<<< HEAD
-    object.key[object.count]  = key; // key is just absorbed here and owned here from now on
-=======
     object.key[object.count] = key; // key is just absorbed here and owned here from now on
->>>>>>> refs/remotes/origin/master
     // this should be sourced from the string allocator backend once it is implemented
     object.value[object.count] = value;
     object.count++;
@@ -49,11 +45,7 @@ object_t insertSubobjectEntry(object_t object, string key, object_t value) {
     } 
     object.key = key_;
     object.value = value_;
-<<<<<<< HEAD
-    object.key[object.count]  = key; // key is just absorbed here and owned here from now on
-=======
     object.key[object.count] = key; // key is just absorbed here and owned here from now on
->>>>>>> refs/remotes/origin/master
     // this should be sourced from the string allocator backend once it is implemented
     object.value[object.count].discriminant = obj_t_obj;
     object.value[object.count].obj = value;
@@ -96,11 +88,7 @@ object_t insertNumberEntry(object_t object, string key, number_t value) {
 }
 
 object_t insertStringEntry(object_t object, string key, string value) {
-<<<<<<< HEAD
     string *key_ = realloc(object.key, sizeof(string) * (object.count + 1));
-=======
-    string *key_ = realloc(object.key, sizeof(obj_t_key_t) * (object.count + 1));
->>>>>>> refs/remotes/origin/master
     obj_t_value_t *value_ = realloc(object.value, sizeof(obj_t_value_t) * (object.count + 1));
     printf("key: %p\nvalue: %p\n", key, value);
     if(key_ == NULL || value_ == NULL) {
@@ -111,11 +99,7 @@ object_t insertStringEntry(object_t object, string key, string value) {
     object.value = value_;
     printf("the object entry count is %ld\n", object.count);
     printf("%p\n", object.key);
-<<<<<<< HEAD
-    object.key[object.count]  = key; // key is just absorbed here and owned here from now on
-=======
     object.key[object.count] = key; // key is just absorbed here and owned here from now on
->>>>>>> refs/remotes/origin/master
     // this should be sourced from the string allocator backend once it is implemented
     object.value[object.count].discriminant = obj_t_string;
     object.value[object.count].str = value;
@@ -132,11 +116,7 @@ object_t insertBoolEntry(object_t object, string key, bool value) {
     } 
     object.key = key_;
     object.value = value_;
-<<<<<<< HEAD
-    object.key[object.count]  = key; // key is just absorbed here and owned here from now on
-=======
     object.key[object.count] = key; // key is just absorbed here and owned here from now on
->>>>>>> refs/remotes/origin/master
     // this should be sourced from the string allocator backend once it is implemented
     if(value) {
         object.value[object.count].discriminant = obj_t_true;
@@ -156,11 +136,7 @@ object_t insertNullEntry(object_t object, string key) {
     } 
     object.key = key_;
     object.value = value_;
-<<<<<<< HEAD
-    object.key[object.count]  = key; // key is just absorbed here and owned here from now on
-=======
     object.key[object.count] = key; // key is just absorbed here and owned here from now on
->>>>>>> refs/remotes/origin/master
     // this should be sourced from the string allocator backend once it is implemented
     object.value[object.count].discriminant = obj_t_null;
     object.count++;
@@ -732,13 +708,6 @@ int objncmp(object_t obj1, object_t obj2, size_t n) {
     return 0;
 }
 
-<<<<<<< HEAD
-int valcmp(obj_t_value_t val1, obj_t_value_t val2) {
-    // using === from js
-    if(val1.discriminant != val2.discriminant) {
-        return -1;
-    }
-=======
 bool objeql(object_t obj1, object_t obj2) {
     return objncmp(obj1, obj2, obj1.count) == 0;
 }
@@ -783,7 +752,13 @@ int valcmp(obj_t_value_t val1, obj_t_value_t val2);
 int valncmp(obj_t_value_t val1, obj_t_value_t val2, size_t n);
 bool valeql(obj_t_value_t val1, obj_t_value_t val2);
 bool valneql(obj_t_value_t val1, obj_t_value_t val2, size_t n);
->>>>>>> refs/remotes/origin/master
+
+
+int valcmp(obj_t_value_t val1, obj_t_value_t val2) {
+    // using === from js
+    if(val1.discriminant != val2.discriminant) {
+        return -1;
+    }
 
     switch(val1.discriminant) {
         case obj_t_null:
