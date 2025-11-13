@@ -739,6 +739,52 @@ obj_t_value_t objget(object_t obj, string key) {
 }
 
 object_t objcopy(object_t obj);
+
+obj_t_value_t obj_t_value_t_copy(obj_t_value_t val) {
+    obj_t_value_t ret;
+    ret.discriminant = val.discriminant;
+    
+    switch(val.discriminant) {
+        case obj_t_string:
+            ret.str = stringFromString(val.str);
+            break;
+            
+        case obj_t_array: {
+            ret.arr = createEmptyArray();
+            for(size_t i = 0; i < val.arr.count; i++) {
+                obj_t_value_t elem_copy = obj_t_value_t_copy(val.arr.array[i]);
+                ret.arr = insertIntoArray(ret.arr, elem_copy);
+            }
+            break;
+        }
+        
+        case obj_t_obj: {
+            ret.obj = createEmptyObject();
+            for(size_t i = 0; i < val.obj.count; i++) {
+                string key_copy = stringFromString(val.obj.key[i]);
+                obj_t_value_t val_copy = obj_t_value_t_copy(val.obj.value[i]);
+                ret.obj = insertObjectEntry(ret.obj, key_copy, val_copy);
+            }
+            break;
+        }
+        
+        case obj_t_number:
+            ret.num = val.num;
+            break;
+            
+        case obj_t_null:
+        case obj_t_true:
+        case obj_t_false:
+            break;
+            
+        default:
+            fprintf(stderr, "Unknown discriminant in obj_t_value_t_copy\n");
+            break;
+    }
+    
+    return ret;
+}
+
 bool objremove(object_t obj, string key);
 
 int arraycmp(array_t arr1, array_t arr2);

@@ -156,6 +156,7 @@ bool objeql(object_t obj1, object_t obj2);
 bool objneql(object_t obj1, object_t obj2, size_t n);
 bool objcontains(object_t obj, string key);
 obj_t_value_t objget(object_t obj, string key);
+obj_t_value_t obj_t_value_t_copy(obj_t_value_t val); 
 object_t objcopy(object_t obj);
 bool objremove(object_t obj, string key);
 
